@@ -29,8 +29,10 @@ import android.speech.tts.UtteranceProgressListener;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,6 +69,8 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
 
     private ImageView mImage;
     private TextView[] mResultViews;
+    private LinearLayout mTopLayout;
+    private android.widget.Button takePictureButton;
 
     private AtomicBoolean mReady = new AtomicBoolean(false);
     private ButtonInputDriver mButtonDriver;
@@ -83,6 +87,8 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         mResultViews[0] = (TextView) findViewById(R.id.result1);
         mResultViews[1] = (TextView) findViewById(R.id.result2);
         mResultViews[2] = (TextView) findViewById(R.id.result3);
+        mTopLayout = (LinearLayout) findViewById(R.id.results);
+        takePictureButton = (android.widget.Button) findViewById(R.id.takePictureButton);
 
         if (hasPermission()) {
             if (savedInstanceState == null) {
@@ -95,6 +101,7 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
 
     private void init() {
         initPIO();
+        initDisplayControls();
 
         mBackgroundThread = new HandlerThread("BackgroundThread");
         mBackgroundThread.start();
@@ -131,6 +138,13 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         if (mReadyLED == null) {
             Log.w(TAG, "Cannot find pin " + LED_PIN + ". Ignoring ready indicator LED.");
         }
+    }
+
+    private void initDisplayControls() {
+
+        // Set top bar color. We can use this in the same was as the LED
+        mTopLayout.setBackgroundColor(0xFFFF0000); // RED
+
     }
 
     private Runnable mInitializeOnBackground = new Runnable() {
@@ -209,8 +223,35 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
         return super.onKeyDown(keyCode, event);
     }
 
+    public void takePictureButtonOnClick(View view) {
+        Log.d(TAG, "Recieved button click. Ready = " + mReady.get());
+
+        if (mReady.get()) {
+            setReady(false);
+            mBackgroundHandler.post(mBackgroundClickHandler);
+        } else {
+            Log.i(TAG, "Sorry, processing hasn't finished. Try again in a few seconds");
+        }
+
+    }
+
+    private void setTopLayoutReady() {
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(mReady.get())
+                    mTopLayout.setBackgroundColor(0xFF00FF00); // Green
+                else
+                    mTopLayout.setBackgroundColor(0xFFFF0000); // Red
+
+            }
+        });
+    }
+
     private void setReady(boolean ready) {
         mReady.set(ready);
+        setTopLayoutReady();
         if (mReadyLED != null) {
             try {
                 mReadyLED.setValue(ready);
