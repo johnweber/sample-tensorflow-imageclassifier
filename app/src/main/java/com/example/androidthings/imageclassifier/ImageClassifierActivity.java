@@ -18,6 +18,7 @@ package com.example.androidthings.imageclassifier;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Build;
@@ -150,8 +151,7 @@ public class ImageClassifierActivity extends Activity implements ImageReader.OnI
     private Runnable mInitializeOnBackground = new Runnable() {
         @Override
         public void run() {
-            mImagePreprocessor = new ImagePreprocessor(CameraHandler.IMAGE_WIDTH,
-                    CameraHandler.IMAGE_HEIGHT, TensorFlowImageClassifier.INPUT_SIZE);
+            mImagePreprocessor = new ImagePreprocessor();
 
             mTtsSpeaker = new TtsSpeaker();
             mTtsSpeaker.setHasSenseOfHumor(true);

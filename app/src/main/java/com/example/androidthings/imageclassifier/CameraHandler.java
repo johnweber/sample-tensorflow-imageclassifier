@@ -31,20 +31,22 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
+
 import java.util.Collections;
+
 import static android.content.Context.CAMERA_SERVICE;
 
 public class CameraHandler {
     private static final String TAG = CameraHandler.class.getSimpleName();
 
-    public static final int IMAGE_WIDTH = 320;
-    public static final int IMAGE_HEIGHT = 240;
+    public static final int IMAGE_WIDTH = 640;
+    public static final int IMAGE_HEIGHT = 480;
 
     private static final int MAX_IMAGES = 1;
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
     /**
-     * An {@link android.media.ImageReader} that handles still image capture.
+     * An {@link ImageReader} that handles still image capture.
      */
     private ImageReader mImageReader;
     // Lazy-loaded singleton, so only one instance of the camera is created.
@@ -78,7 +80,7 @@ public class CameraHandler {
         Log.d(TAG, "Using camera id " + id);
         // Initialize the image processor
         mImageReader = ImageReader.newInstance(IMAGE_WIDTH, IMAGE_HEIGHT,
-                ImageFormat.YUV_420_888, MAX_IMAGES);
+                ImageFormat.JPEG, MAX_IMAGES);
         mImageReader.setOnImageAvailableListener(
                 imageAvailableListener, backgroundHandler);
         // Open the camera resource
@@ -105,7 +107,7 @@ public class CameraHandler {
         }
         @Override
         public void onError(@NonNull CameraDevice cameraDevice, int i) {
-            Log.d(TAG, "Camera device error, closing.");
+            Log.d(TAG, "Camera device error " + i + ", closing.");
             closeCaptureSession();
             cameraDevice.close();
         }
@@ -162,7 +164,7 @@ public class CameraHandler {
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(mImageReader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-            captureBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
+//            captureBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
             Log.d(TAG, "Capture request created.");
             mCaptureSession.capture(captureBuilder.build(), mCaptureCallback, null);
         } catch (CameraAccessException cae) {
